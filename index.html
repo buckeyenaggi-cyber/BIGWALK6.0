@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Includes XR Engine by Niantic Spatial, Inc. Copyright © 2026 Niantic Spatial, Inc.
+       Distributed unchanged; license and warranty disclaimer: vendor/8thwall-engine/LICENSE -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3f0e8">
+  <title>Bounce & Echo · Found on the Oval</title>
+  <style>
+    :root{color-scheme:light;--paper:#f3f0e8;--ink:#192c2a;--teal:#367f76;--orange:#ff784d;--muted:#6b7770}
+    *{box-sizing:border-box} [hidden]{display:none!important}
+    html,body{margin:0;width:100%;min-height:100%;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--paper);color:var(--ink)}
+    button{font:inherit;cursor:pointer} button:focus-visible{outline:3px solid #ff784d;outline-offset:4px}
+    #start-screen{min-height:100dvh;display:grid;place-items:center;padding:28px 22px}
+    .card{width:min(100%,430px);text-align:center}.eyebrow{font-size:11px;letter-spacing:.17em;text-transform:uppercase;color:var(--teal);font-weight:800;margin:0 0 14px}
+    h1{font-size:clamp(40px,11vw,58px);letter-spacing:-.065em;line-height:.94;margin:0}
+    .art{max-width:310px;margin:6px auto 4px}.art svg{width:100%;display:block}.howto{font-size:14px;line-height:1.55;margin:0 0 20px;font-weight:650}
+    .primary,.secondary{min-height:50px;border-radius:999px;padding:13px 23px;font-weight:750}.primary{border:0;background:var(--ink);color:white;width:min(100%,310px);box-shadow:0 4px 0 #10211e}.primary:active{transform:translateY(2px);box-shadow:0 2px 0 #10211e}.secondary{border:1px solid #c8d1c6;background:transparent;color:var(--ink);margin-top:11px;width:min(100%,310px)}
+    .primary:disabled{opacity:.45;cursor:default;transform:none;box-shadow:none}
+    #status{font-size:12px;line-height:1.5;color:var(--muted);margin:12px 0 0}#status:empty,#coords:empty{display:none}#coords{font:11px ui-monospace,monospace;color:#7d8b81;margin:5px 0 0}
+    #camera-layer{position:fixed;inset:0;z-index:1;overflow:hidden;pointer-events:none}#camera-layer video{position:absolute!important;top:0;left:0;z-index:0!important;max-width:none}
+    #ar-host{position:fixed;inset:0;display:none;z-index:2;background:transparent}#ar-host.on{display:block}#ar-host a-scene{position:absolute;inset:0;width:100%;height:100%}#ar-host canvas{touch-action:none!important}
+    #xr-overlay{position:fixed;inset:0;z-index:5;pointer-events:none;background:transparent!important}#xr-overlay:backdrop{background:transparent}#ar-input{position:absolute;inset:0;pointer-events:none;touch-action:none}#ar-input.on{pointer-events:auto}
+    #tracking-note{position:absolute;bottom:max(75px,calc(55px + env(safe-area-inset-bottom)));left:50%;transform:translateX(-50%);max-width:90%;width:max-content;text-align:center;background:#f7f5e9ed;border-radius:12px;padding:10px 14px;color:#345947;font-size:13px;line-height:1.5}
+    body.camera-on #trail-screen{background:transparent}body.camera-on .trail-top p,body.camera-on .trail-caption,body.camera-on #trail-signal,body.camera-on #trail-status{color:#fff;text-shadow:0 1px 6px #000b}body.camera-on .listen-lines{display:none}
+    #hud{display:none;position:fixed;inset:0;z-index:6;pointer-events:none}#hud.on{display:block}.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:calc(13px + env(safe-area-inset-top)) 14px 0}
+    .hud-card{max-width:min(77vw,260px);background:#f7f5e9e8;border-radius:13px;padding:10px 12px}.hud-heading{display:flex;align-items:center;gap:18px;justify-content:space-between}.hud-title{font-size:14px;font-weight:650;margin:0}#hud-status{font-size:12px;line-height:1.45;color:#52635b;margin:5px 0 0}#hud-status:empty{display:none}#progress{font-size:11px;color:#6b796b;white-space:nowrap}
+    .icon-button{border:1px solid #ffffff85;background:#f7f5e9ef;color:var(--ink);height:42px;min-width:42px;border-radius:50%;pointer-events:auto;font-size:23px}
+    .controls{position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(calc(100% - 24px),440px);pointer-events:auto;text-align:center}
+    #station-labels{position:absolute;inset:0;pointer-events:none}.station-label{position:absolute;top:0;left:0;min-width:84px;min-height:49px;padding:8px 12px;background:#f7f5e9ee;color:#345947;border:1px solid #ffffffbb;border-radius:15px;pointer-events:auto;box-shadow:0 3px 13px #263e2c17;font-size:13px;font-weight:800;line-height:1.15}.station-label span{display:block;font-size:9px;font-weight:600;color:#6d8067;margin-top:4px}.station-label.done{background:#dce8bfee;border-color:#b4c687}.station-label.done span{color:#466232}#field-overview{min-height:44px;padding:11px 23px;border:1px solid #fff9;border-radius:99px;background:#f7f5e9ee;color:#345947;font-size:12px;font-weight:800;box-shadow:0 3px 15px #263e2c12}
+    #quest-stamps{display:flex;gap:6px;margin-top:7px}#quest-stamps span{width:5px;height:5px;border-radius:50%;background:#bdc8b9}#quest-stamps .done{background:#64815c}
+    #reward-pop{position:absolute;top:30%;left:50%;transform:translateX(-50%);max-width:90vw;white-space:nowrap;background:#dfeabfef;border:1px solid #fff;color:#34593c;border-radius:99px;padding:12px 20px;font-size:16px;font-weight:800;box-shadow:0 5px 25px #243d281c}
+    @media(max-height:500px){#reward-pop{top:44%;font-size:12px;padding:9px 14px}#quest-stamps{margin-top:5px}}
+    #aim-hint{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);font-size:11px;font-weight:800;letter-spacing:.05em;background:#f7f5e9d9;padding:7px 11px;border-radius:999px;color:#365a4a;transition:opacity .2s;opacity:0}
+    #aim-hint{white-space:nowrap;max-width:94vw;top:47%;font-size:11px;letter-spacing:0;box-shadow:0 2px 10px #23352a13}
+    .scene-hint{position:absolute;top:calc(47% + 48px);left:50%;transform:translateX(-50%);border-radius:999px;background:#f7f5e9e8;color:#34574a;padding:9px 13px;font-size:11px;font-weight:700;text-align:center;white-space:nowrap}
+    #finish-card h2{font-size:23px;letter-spacing:-.055em;line-height:1.1;margin:5px 0 9px}#finish-card p{font-size:12px;line-height:1.55;color:#52635b;margin:0 0 15px}#finish-card .eyebrow{font-size:9px;letter-spacing:.14em;color:var(--teal);margin:0}
+    @media(max-height:500px){.scene-hint{top:50%}}
+
+    #trail-screen{position:fixed;inset:0;z-index:4;background:radial-gradient(ellipse at 50% 46%,#eef0e5 0,#e4e9dd 62%,#dde5d8 100%);overflow:auto;display:flex;flex-direction:column;padding:calc(17px + env(safe-area-inset-top)) 18px max(20px,env(safe-area-inset-bottom));min-height:100dvh}
+    .trail-top{display:flex;justify-content:space-between;align-items:center;gap:15px}.trail-top p{margin:0;font-size:10px;letter-spacing:.13em;font-weight:800;color:#547765;text-transform:uppercase}.trail-top .icon-button{flex-shrink:0}
+    .trail-body{width:min(100%,440px);margin:auto;text-align:center;padding:17px 0 12px}.trail-body h2{font-size:clamp(25px,7vw,35px);line-height:1.13;letter-spacing:-.055em;margin:9px auto 12px;max-width:340px}.trail-caption{font-size:13px;line-height:1.65;color:#5a6c60;max-width:320px;margin:0 auto;min-height:22px}.demo-tag{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:#f5efd9;border-radius:99px;padding:6px 10px;color:#82704e}
+    #trail-field{height:285px;position:relative;margin:3px auto 5px;max-width:370px}.listen-lines{position:absolute;width:100%;height:100%;inset:0;pointer-events:none}.listen-lines path{stroke:#becdb7;fill:none;stroke-width:1.1;stroke-dasharray:2 7}
+    .probe{--strength:.1;position:absolute;width:88px;height:88px;border:1px solid #fff9;border-radius:50%;background:#f5f4e9d9;box-shadow:0 6px 22px #456b4520,inset 0 0 0 9px #9db59a32;color:#3d6550;display:grid;place-content:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;touch-action:manipulation}
+    .probe svg{width:24px;height:24px;margin:auto}.probe::after{content:'';position:absolute;inset:-8px;border:1px solid #8da98766;border-radius:50%;opacity:0}.probe.is-playing,.probe.is-held{background:#d6dfbc;box-shadow:0 5px 28px #628b4f38,inset 0 0 0 9px #a2b98f66}.probe.is-held{outline:2px solid #6d8d60;outline-offset:4px}.probe{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.probe.is-playing:not(.still)::after{animation:listen-pulse .55s ease-out}.probe.show-strength{background:rgba(151,181,127,calc(.12 + var(--strength)*.7))}
+    #probe-ahead{top:12px;left:50%;transform:translateX(-50%)}#probe-left{top:150px;left:5%}#probe-right{top:150px;right:5%}.trail-center{position:absolute;left:50%;top:210px;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;background:#718e70;box-shadow:0 0 0 7px #9bb18c26}
+    #trail-stops{display:flex;justify-content:center;gap:8px;margin:12px 0;height:7px}#trail-stops span{width:7px;height:7px;border-radius:50%;background:#bbcbb6}#trail-stops .current{background:#728d68;box-shadow:0 0 0 3px #b7c6a644}#trail-stops .done{background:#9caa6b}
+    #trail-clue-text{font-size:12px;color:#436c50;font-weight:700;line-height:1.5;margin:8px 0 0}.trail-bottom{text-align:center;width:min(100%,440px);margin:0 auto}#trail-scan{width:min(100%,285px);min-height:46px;font-size:13px}.trail-tools{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin-top:11px}.trail-tools button{border:1px solid #bcccb299;border-radius:99px;min-height:38px;padding:9px 12px;background:#f2f2e4c7;color:#3f6250;font-size:11px;font-weight:700}
+    #trail-status{font-size:10px;line-height:1.5;color:#7a897c;margin:13px 0 0}#demo-controls{display:flex;gap:7px;justify-content:center;margin-top:18px}#demo-controls button{min-height:44px;border:1px solid #b6c7ad;border-radius:99px;background:#e4ebd5;padding:10px 14px;color:#456046;font-size:12px;font-weight:750}#demo-step{background:#cadba9!important}#trail-demo-note{font-size:10px;color:#7e8878;line-height:1.5;margin:8px 0 0}
+    #trail-found{padding:16px 0 8px}#trail-found svg{width:120px;height:120px;margin:5px 0 10px}#trail-found h3{font-size:25px;letter-spacing:-.04em;margin:0 0 9px}#trail-found p{font-size:13px;color:#5d705e;line-height:1.65;margin:0 auto 20px;max-width:290px}#trail-enter{font-size:13px}
+    .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @keyframes listen-pulse{0%{transform:scale(.92);opacity:.8}100%{transform:scale(1.22);opacity:0}}
+    @media(max-height:680px){.trail-body{padding-top:6px}.trail-body h2{font-size:25px}.trail-caption{font-size:12px;min-height:50px}#trail-field{height:220px}#probe-left,#probe-right{top:120px}.trail-center{top:170px}.probe{width:74px;height:74px}#demo-controls{margin-top:10px}}
+    @media(max-height:480px) and (min-width:600px){#trail-screen{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px}.trail-top{grid-column:1/-1}.trail-body{margin:0;grid-row:2/4}.trail-bottom{margin:auto}.trail-caption{min-height:0}#trail-field{height:155px}.probe{width:62px;height:62px}#probe-ahead{top:0}#probe-left,#probe-right{top:78px}.trail-center{top:126px}#trail-stops{margin:5px}#trail-found svg{display:none}#trail-found{padding:5px}.trail-body h2{font-size:22px;margin:0 0 6px}}
+
+    @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+    #error-note{display:none;position:fixed;z-index:9;left:50%;top:50%;transform:translate(-50%,-50%);width:min(calc(100% - 36px),420px);background:#1a302aee;color:#fff;padding:18px;border-radius:18px;line-height:1.5;font-size:14px}#error-note.on{display:block}
+    @media(max-height:650px){.art{max-width:225px}#start-screen{padding-block:18px}h1{font-size:40px}.subtitle{margin-top:10px}.hud-card{padding:9px 12px}#hud-status{min-height:18px}.controls{bottom:9px}}
+    .art{max-width:280px;margin:24px auto 22px}#start-screen .card{padding-block:12px}
+    .station-label{min-width:72px;min-height:40px;padding:10px 13px;border-radius:12px;font-size:12px}.station-label span:empty{display:none}
+    .controls{display:flex;justify-content:center;align-items:center;width:auto;max-width:calc(100% - 24px)}
+    #reward-pop{top:29%;padding:8px 14px;font-size:13px;box-shadow:none}
+    @media(max-height:680px){.trail-caption{min-height:22px!important}}
+    .station-label{pointer-events:none;min-width:0;min-height:0;background:none;border:0;box-shadow:none;border-radius:0;padding:4px 0;font-size:12px;color:#56705a;font-weight:500}.station-label.done{background:none;color:#466232}.station-label span{display:none}
+    #field-overview{min-width:44px;min-height:44px;font-size:20px!important;padding:7px 12px!important}
+    .controls{bottom:max(18px,env(safe-area-inset-bottom))}#trail-retry{min-height:42px;padding:9px 20px;border:1px solid #bdcab5;background:transparent;color:#456046;border-radius:99px}
+  </style>
+</head>
+<body>
+  <main id="start-screen"><section class="card" aria-live="polite">
+    <h1>Bounce<br>& Echo</h1>
+    <div class="art"><svg viewBox="0 0 320 230" role="img" aria-label="A teal ring, an orange ball, and three little listening beacons">
+      <ellipse cx="163" cy="205" rx="105" ry="12" fill="#315441" opacity=".1"/>
+      <path d="M160 172v23" stroke="#718d78" stroke-width="10" stroke-linecap="round"/><ellipse cx="160" cy="197" rx="34" ry="9" fill="#81917d"/>
+      <circle cx="160" cy="96" r="62" fill="none" stroke="#71826e" stroke-width="21"/><circle cx="160" cy="92" r="62" fill="none" stroke="#9ab29a" stroke-width="20"/>
+      <path d="M97 81a65 65 0 0 1 56-53" fill="none" stroke="#bcc9ad" stroke-width="4" stroke-linecap="round"/>
+      <path d="M77 159q32-106 82-67" fill="none" stroke="#f18d56" stroke-width="3" stroke-dasharray="3 8"/>
+      <circle cx="77" cy="159" r="19" fill="#bb7954"/><circle cx="77" cy="155" r="19" fill="#e39567"/><path d="M69 147q8-6 15 0" fill="none" stroke="#ffd3a0" stroke-width="3" stroke-linecap="round"/>
+      <path d="M43 172v21M267 170v22" stroke="#7c9676" stroke-width="5"/><circle cx="43" cy="162" r="13" fill="#d4df79"/><circle cx="267" cy="160" r="13" fill="#a5b8e8"/>
+      <path d="M248 144q-10-9-6-20M284 145q10-10 6-20" fill="none" stroke="#a5b8e8" stroke-width="2" stroke-linecap="round"/>
+      <path d="M240 66l4-9 4 9 9 4-9 4-4 9-4-9-9-4z" fill="#d4df79"/>
+    </svg></div>
+    <p class="howto" id="howto" hidden></p>
+    <button id="start" class="primary" type="button">Start</button>
+    <p id="status"></p><p id="coords"></p>
+    <div id="scout-tools" hidden><button id="mark" class="secondary" type="button">Mark this spot</button><div id="marked"></div></div>
+  </section></main>
+  <section id="trail-screen" hidden aria-label="Follow the sound to the landmark">
+    <div class="trail-top"><p id="trail-stage">Listen</p><button id="trail-exit" type="button" class="icon-button" aria-label="Leave the sound trail">×</button></div>
+    <div class="trail-body"><span id="trail-demo-tag" class="demo-tag" hidden>Practice</span><h2 id="trail-signal">Listen</h2><p id="trail-caption" class="trail-caption" role="status">Follow the louder sound.</p>
+      <div id="trail-field"><svg class="listen-lines" viewBox="0 0 370 285" aria-hidden="true"><path d="M185 210V94M185 210Q126 203 59 192M185 210Q244 203 311 192M86 116Q185 40 284 116"/></svg>
+        <button id="probe-left" class="probe" type="button" aria-label="Listen left"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M7 7a7 7 0 0 0 0 10M17 7a7 7 0 0 1 0 10M4 4a11 11 0 0 0 0 16M20 4a11 11 0 0 1 0 16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span>Left</span></button>
+        <button id="probe-ahead" class="probe" type="button" aria-label="Listen ahead"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M7 7a7 7 0 0 0 0 10M17 7a7 7 0 0 1 0 10M4 4a11 11 0 0 0 0 16M20 4a11 11 0 0 1 0 16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span>Ahead</span></button>
+        <button id="probe-right" class="probe" type="button" aria-label="Listen right"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M7 7a7 7 0 0 0 0 10M17 7a7 7 0 0 1 0 10M4 4a11 11 0 0 0 0 16M20 4a11 11 0 0 1 0 16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span>Right</span></button>
+
+        <span class="trail-center" aria-hidden="true"></span>
+      </div><div id="trail-stops" aria-label="Small signals along the trail"></div><p id="trail-clue-text" hidden></p>
+      <div id="trail-found" hidden><svg viewBox="0 0 120 120" aria-hidden="true"><ellipse cx="60" cy="107" rx="25" ry="6" fill="#b8c4aa"/><path d="M60 77v26" stroke="#799273" stroke-width="5"/><circle cx="60" cy="45" r="29" fill="none" stroke="#9ab29a" stroke-width="9"/><circle cx="48" cy="49" r="8" fill="#e39567"/><path d="M92 24l4-5m1 16h7m-65-19-3-6" stroke="#b7bd83" stroke-width="3" stroke-linecap="round"/></svg><button id="trail-enter" class="primary" type="button">Enter</button></div>
+    </div>
+    <div class="trail-bottom"><button id="trail-retry" type="button" hidden>Retry</button>
+      <div id="demo-controls" hidden><button id="demo-left" type="button" aria-label="Turn left">↶</button><button id="demo-step" type="button" aria-label="Step forward">↑</button><button id="demo-right" type="button" aria-label="Turn right">↷</button></div><p id="trail-status"></p>
+    </div>
+  </section>
+  <div id="camera-layer" aria-hidden="true"></div>
+  <div id="ar-host" aria-label="Real space AR game"></div>
+  <div id="xr-overlay">
+  <div id="ar-input" aria-label="Touch the objects in your surroundings"></div>
+  <div id="hud" aria-live="polite">
+    <div class="topbar"><div class="hud-card"><p id="quest-stage" class="sr-only"></p><div class="hud-heading"><p class="hud-title" id="hud-title">Bounce & Echo</p><div id="progress">0 / 3</div></div><p id="hud-status"></p><div id="quest-stamps" aria-label="Completed activities"><span id="stamp-throw"></span><span id="stamp-swing"></span><span id="stamp-echo"></span></div></div><button id="exit-ar" class="icon-button" type="button" aria-label="Close game">×</button></div>
+    <div id="reward-pop" role="status" hidden></div>
+    <div id="station-labels" role="group" aria-label="Three stations in the real space">
+      <span class="station-label" id="station-label-throw" hidden>Toss<span></span></span>
+      <span class="station-label" id="station-label-swing" hidden>Swing<span></span></span>
+      <span class="station-label" id="station-label-echo" hidden>Echo<span></span></span>
+    </div>
+    <div id="aim-hint">Aim inside the ring</div>
+    <div id="direction-hint" class="scene-hint" hidden></div>
+    <div id="tracking-note" role="status" hidden><span id="tracking-text"></span></div>
+    
+
+    <div class="controls"><button id="field-overview" type="button" hidden aria-label="Back to the three objects">←</button></div>
+  </div>
+
+  <div id="error-note" role="status"></div>
+  </div>
+  <script src="navigation.js?v=geo-auto-17"></script><script src="sound-trail.js?v=geo-auto-17"></script><script src="physics.js"></script><script src="field-layout.js"></script><script src="camera-lifecycle.js?v=geo-auto-17"></script><script src="ground-tracking.js?v=geo-auto-17"></script><script src="spatial-ar.js?v=geo-auto-17"></script><script src="contact-effects.js"></script><script src="ambient-match.js"></script><script src="models/model-data.js"></script><script src="app.js?v=geo-auto-17"></script>
+</body>
+</html>

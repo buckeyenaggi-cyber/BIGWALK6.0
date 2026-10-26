@@ -1,0 +1,57 @@
+Bundled open-source runtime files:
+
+A-Frame 1.6.0 (includes Three.js and other credited dependencies)
+https://github.com/aframevr/aframe/tree/v1.6.0
+Commit: e6c47761f1eaf5b5e65369d562c149e8eeb71532
+License: MIT, see AFRAME-LICENSE.txt and bundled notices.
+
+aframe-ar-nft.js and ar-threex-location-only.js, AR.js 3.4.8
+https://github.com/AR-js-org/AR.js/tree/3.4.8
+Commit: 147ccd4170bb153f64d7fd9858eaff1d3294990c
+License: AR.js code is MIT. The included artoolkit5-js portions are LGPLv3
+with additional permission, as documented by the upstream AR.js README:
+https://github.com/AR-js-org/AR.js#licenses
+Corresponding upstream source and notices: https://github.com/AR-js-org/AR.js
+and https://github.com/artoolkitx/jsartoolkit5
+See ARJS-LICENSE.txt, LGPL-3.txt, GPL-3.txt and bundled notices.
+AR.js runtime has small lifecycle modifications, reproduced by tools/patch_arjs.py.
+The camera-source class is exposed so camera-lifecycle.js can safely handle late
+permission grants; resize callbacks and initialization stop safely after removal.
+
+Hiro image, marker pattern, and default camera calibration are from AR.js 3.4.8:
+https://github.com/AR-js-org/AR.js/blob/3.4.8/data/images/hiro.png
+https://github.com/AR-js-org/AR.js/blob/3.4.8/data/data/patt.hiro
+https://github.com/AR-js-org/AR.js/blob/3.4.8/data/data/camera_para.dat
+Hiro is used only for marker tracking; no NFT image target is used.
+
+Interaction-pattern references (not extra runtime downloads):
+Three.js r169, commit 37d6f280a5cd642e801469bb048f52300d31258e
+https://github.com/mrdoob/three.js/tree/r169
+XR grabbing highlight, ring reticle, and PositionalAudio HRTF examples.
+Adapted for touchscreen aim and native Web Audio in app.js.
+Three.js MIT license: THREE-LICENSE.txt. Detailed source links are in README.md.
+
+Additional source references reviewed for this iteration:
+Enva-XR LightProbe (environment lighting):
+https://github.com/tentone/enva-xr/blob/main/src/object/LightProbe.ts
+pinball-xr TableAudio (position- and speed-dependent impact audio):
+https://github.com/patrick-s-young/pinball-xr/blob/main/src/audio/TableAudio.js
+A-Frame Physics spring and grab examples (damping and grab/release states):
+https://github.com/c-frame/aframe-physics-system/blob/master/examples/cannon/spring.html
+https://github.com/c-frame/aframe-physics-system/blob/master/examples/components/grab.js
+These are implementation references; no additional runtime from these projects is bundled.
+The exact inspected source blob IDs are recorded in README.md.
+
+World-tracking runtime added in this revision:
+8th Wall Engine Binary 1.0.0, distributed unchanged from the official npm package.
+https://www.npmjs.com/package/@8thwall/engine-binary/v/1.0.0
+https://github.com/8thwall/engine
+License, copyright and warranty disclaimer: 8thwall-engine/LICENSE
+This binary includes SLAM under the XR Engine License Agreement, not MIT.
+
+8-Frame 1.5.0, unmodified official example artifact:
+https://github.com/8thwall/aframe-world-effects-example/tree/582b28a94182f0243346f1c22df4b49091dbf2ad
+File SHA-256: 7617f92c289abf00ef6fbc6bfee35944f6c4c2b1e1200e8e8d4cc58ea4a067af
+MIT notices: 8FRAME-LICENSE.txt, AFRAME-LICENSE.txt and bundled notices.
+
+The engine is loaded locally; no hosted-service account or API key is used.
